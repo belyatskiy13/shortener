@@ -10,8 +10,6 @@ class Singleton(type):
     def __call__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(Singleton, cls).__call__(*args, **kwargs)
-        else:
-            print('class instance exists')
         return cls._instance
 
 
@@ -27,16 +25,13 @@ class Database(metaclass=Singleton):
         if not hasattr(self, 'rc'):
             self.rc = redis.Redis(host=self.host, port=self.port, db=self.db_id, password=self.password)
             _ = self.rc.ping()
-        else:
-            print('Connection exists')
-        return True
 
     def put(self, item: str) -> str:
         idx = self.rc.rpush(self.dictionary_name, item)
         idx -= 1
         return str(idx)
 
-    def batch_put(self, items: List[str]) -> List[str]:
+    def batch_put(self, items: List[str]) -> list[str]:
         with self.rc.pipeline() as pipe:
             processed_items = 0
             for item in items:
@@ -48,9 +43,12 @@ class Database(metaclass=Singleton):
 
     def get(self, idx: int) -> str:
         item = self.rc.lindex(self.dictionary_name, idx)
-        return item.decode('utf-8')
+        if item:
+            return item.decode('utf-8')
+        else:
+            return item
 
     def view_all(self, idx_start: int = 0, idx_end: int = -1) -> List[str]:
         items = self.rc.lrange(self.dictionary_name, idx_start, idx_end)
         items = [item.decode('utf-8') for item in items]
-        return items
+        return {'items': items}
