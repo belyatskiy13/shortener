@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Union
+from configparser import ConfigParser
 
 import redis
 
@@ -13,13 +14,19 @@ class Singleton(type):
         return cls._instance
 
 
-@dataclass
 class Database(metaclass=Singleton):
-    dictionary_name: str = 'links'
-    host: str = 'localhost'
-    port: int = 6379
-    db_id: int = 0
-    password: Union[str, None] = None
+    def __init__(self, config: str = 'config.ini'):
+        conf = ConfigParser()
+        conf.read(config)
+
+        self.dictionary_name = conf['DATABASE']['dictionary_name']
+        self.host = conf['DATABASE']['host']
+        self.port = int(conf['DATABASE']['port'])
+        self.db_id = int(conf['DATABASE']['db_id'])
+        if conf['DATABASE']['password'] == '':
+            self.password = None
+        else:
+            self.password = conf['DATABASE']['password']
 
     def connect(self) -> bool:
         if not hasattr(self, 'rc'):
