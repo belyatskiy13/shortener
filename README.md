@@ -19,7 +19,7 @@ Also, you have to install [Redis](https://redis.io/) on the machine which will p
 ``` bash
 pip install -r requirements.txt
 ```
-* Edit database settings in config file (only default settings available now, so skip this)
+* Edit database settings in config file
 * Run the server
 ``` bash
 uvicorn main:app --host 0.0.0.0 --port <your_port> --workers <num_workers>
